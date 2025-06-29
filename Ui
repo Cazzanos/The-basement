@@ -518,7 +518,7 @@ function Library:Create(TitleText)
 			UIStroke.Thickness = 1
 			UIStroke.Transparency = 0
 
-			local ms = game.Players.LocalPlayer:GetMouse()
+			local ms = game:GetService("Players").LocalPlayer:GetMouse()
 
 			local btn  = Button
 			local sample  = Sample
@@ -762,7 +762,7 @@ function Library:Create(TitleText)
 			UIStroke_3.Thickness = 1
 			UIStroke_3.Transparency = 0
 
-			local ms = game.Players.LocalPlayer:GetMouse()
+			local ms = game:GetService("Players").LocalPlayer:GetMouse()
 
 			local btn  = Toggle
 			local sample  = Sample
@@ -991,7 +991,7 @@ function Library:Create(TitleText)
 			local UIStroke_Idk791 = Instance.new("UIStroke")
 			local UIStroke_qqqaa = Instance.new("UIStroke")
 			
-			local ms = game.Players.LocalPlayer:GetMouse()
+			local ms = game:GetService("Players").LocalPlayer:GetMouse()
 			local uis = game:GetService("UserInputService")
 			
 			local sample = Sample
