@@ -7,6 +7,7 @@ UI made by Deity
 ]]
 
 local Library = {}
+getgenv().UI_CONFIG = getgenv().UI_CONFIG or {}
 
 local tween = game:GetService("TweenService")
 local tweeninfo = TweenInfo.new
@@ -766,7 +767,7 @@ local btn  = Toggle
 local sample  = Sample
 local focusing = false
 
-local toggled = Default
+local toggled = getgenv().UI_CONFIG[ToggleName] ~= nil and getgenv().UI_CONFIG[ToggleName] or Default
 
 -- Apply initial toggle state visually
 if toggled then
@@ -809,6 +810,7 @@ Toggle.MouseButton1Click:Connect(function()
 		c:Destroy()
 
 		toggled = not toggled
+		getgenv().UI_CONFIG[ToggleName] = toggled
 		pcall(callback, toggled)
 	end
 end)
