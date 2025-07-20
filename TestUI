@@ -845,7 +845,6 @@ btn.MouseLeave:Connect(function()
 		hovering = false
 	end
 end)
-end
 
 		function Elements:Slider(SliderTitle, minvalue, maxvalue, callback)
 			SliderTitle = SliderTitle or "Slider"
