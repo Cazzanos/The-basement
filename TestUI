@@ -684,7 +684,18 @@ function Library:Create(TitleText)
 			
 		end
 
-		function Elements:Toggle(ToggleName, Default, callback) ToggleName = ToggleName or "Toggle" if typeof(Default) == "function" then callback = Default Default = false end callback = callback or function() end
+function Elements:Toggle(ToggleName, ConfigOrDefault, Callback) ToggleName = ToggleName or "Toggle"
+
+local callback = Callback or function() end
+local configTable = nil
+local default = false
+
+if typeof(ConfigOrDefault) == "table" then
+	configTable = ConfigOrDefault
+	default = configTable[ToggleName] or false
+elseif typeof(ConfigOrDefault) == "boolean" then
+	default = ConfigOrDefault
+end
 
 local Toggle = Instance.new("TextButton")
 local UICorner_8 = Instance.new("UICorner")
@@ -762,14 +773,11 @@ UIStroke_3.Thickness = 1
 UIStroke_3.Transparency = 0
 
 local ms = game:GetService("Players").LocalPlayer:GetMouse()
-
-local btn  = Toggle
-local sample  = Sample
+local btn = Toggle
+local sample = Sample
 local focusing = false
+local toggled = default
 
-local toggled = getgenv().UI_CONFIG[ToggleName] ~= nil and getgenv().UI_CONFIG[ToggleName] or Default
-
--- Apply initial toggle state visually
 if toggled then
 	CheckmarkHolder.BackgroundColor3 = Color3.fromRGB(115, 191, 92)
 	UIStroke_3.Color = Color3.fromRGB(0, 255, 59)
@@ -777,32 +785,28 @@ end
 
 Toggle.MouseButton1Click:Connect(function()
 	if not focusing then
-		if toggled == false then
-			game.TweenService:Create(CheckmarkHolder, TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+		if not toggled then
+			game.TweenService:Create(CheckmarkHolder, TweenInfo.new(0.15), {
 				BackgroundColor3 = Color3.fromRGB(115, 191, 92)
 			}):Play()
-			game.TweenService:Create(UIStroke_3, TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-				Color = Color3.fromRGB(0, 255, 59) 
+			game.TweenService:Create(UIStroke_3, TweenInfo.new(0.15), {
+				Color = Color3.fromRGB(0, 255, 59)
 			}):Play()
 		else
-			game.TweenService:Create(CheckmarkHolder, TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-				BackgroundColor3 = Color3.fromRGB(63, 63, 63) 
+			game.TweenService:Create(CheckmarkHolder, TweenInfo.new(0.15), {
+				BackgroundColor3 = Color3.fromRGB(63, 63, 63)
 			}):Play()
-			game.TweenService:Create(UIStroke_3, TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-				Color = Color3.fromRGB(81, 81, 81) 
+			game.TweenService:Create(UIStroke_3, TweenInfo.new(0.15), {
+				Color = Color3.fromRGB(81, 81, 81)
 			}):Play()
 		end
+
 		local c = sample:Clone()
 		c.Parent = btn
 		local x, y = (ms.X - c.AbsolutePosition.X), (ms.Y - c.AbsolutePosition.Y)
 		c.Position = UDim2.new(0, x, 0, y)
-		local len, size = 0.35, nil
-		if btn.AbsoluteSize.X >= btn.AbsoluteSize.Y then
-			size = (btn.AbsoluteSize.X * 1.5)
-		else
-			size = (btn.AbsoluteSize.Y * 1.5)
-		end
-		c:TweenSizeAndPosition(UDim2.new(0, size, 0, size), UDim2.new(0.5, (-size / 2), 0.5, (-size / 2)), 'Out', 'Quad', len, true, nil)
+		local len, size = 0.35, math.max(btn.AbsoluteSize.X, btn.AbsoluteSize.Y) * 1.5
+		c:TweenSizeAndPosition(UDim2.new(0, size, 0, size), UDim2.new(0.5, -size / 2, 0.5, -size / 2), 'Out', 'Quad', len, true)
 		for i = 1, 10 do
 			c.ImageTransparency = c.ImageTransparency + 0.05
 			wait(len / 12)
@@ -810,10 +814,13 @@ Toggle.MouseButton1Click:Connect(function()
 		c:Destroy()
 
 		toggled = not toggled
-		getgenv().UI_CONFIG[ToggleName] = toggled
+		if configTable then
+			configTable[ToggleName] = toggled
+		end
 		pcall(callback, toggled)
 	end
 end)
+end
 
 local hovering = false
 btn.MouseEnter:Connect(function()
