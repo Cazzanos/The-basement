@@ -684,11 +684,7 @@ function Library:Create(TitleText)
 			
 		end
 
-function Elements:Toggle(ToggleName, ConfigOrDefault, Callback) ToggleName = ToggleName or "Toggle"
-
-local callback = Callback or function() end
-local configTable = nil
-local default = false
+function Elements:Toggle(ToggleName, ConfigOrDefault, Callback) ToggleName = ToggleName or "Toggle" local callback = Callback or function() end local configTable = nil local default = false
 
 if typeof(ConfigOrDefault) == "table" then
 	configTable = ConfigOrDefault
@@ -698,15 +694,6 @@ elseif typeof(ConfigOrDefault) == "boolean" then
 end
 
 local Toggle = Instance.new("TextButton")
-local UICorner_8 = Instance.new("UICorner")
-local Title_6 = Instance.new("TextLabel")
-local UIPadding_13 = Instance.new("UIPadding")
-local CheckmarkHolder = Instance.new("Frame")
-local UICorner_9 = Instance.new("UICorner")
-local UIStroke_2 = Instance.new("UIStroke")
-local Sample = Instance.new("ImageLabel")
-local UIStroke_3 = Instance.new("UIStroke")
-
 Toggle.Name = "Toggle"
 Toggle.Parent = NewTab
 Toggle.BackgroundColor3 = Color3.fromRGB(26, 26, 26)
@@ -718,9 +705,11 @@ Toggle.Text = ""
 Toggle.TextColor3 = Color3.fromRGB(0, 0, 0)
 Toggle.TextSize = 14.000
 
+local UICorner_8 = Instance.new("UICorner")
 UICorner_8.CornerRadius = UDim.new(0, 4)
 UICorner_8.Parent = Toggle
 
+local Title_6 = Instance.new("TextLabel")
 Title_6.Name = "Title"
 Title_6.Parent = Toggle
 Title_6.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -732,12 +721,14 @@ Title_6.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title_6.TextSize = 14.000
 Title_6.TextXAlignment = Enum.TextXAlignment.Left
 
+local UIPadding_13 = Instance.new("UIPadding")
 UIPadding_13.Parent = Toggle
 UIPadding_13.PaddingBottom = UDim.new(0, 6)
 UIPadding_13.PaddingLeft = UDim.new(0, 6)
 UIPadding_13.PaddingRight = UDim.new(0, 6)
 UIPadding_13.PaddingTop = UDim.new(0, 6)
 
+local UIStroke_2 = Instance.new("UIStroke")
 UIStroke_2.Name = "UIStroke"
 UIStroke_2.Parent = Toggle
 UIStroke_2.ApplyStrokeMode = "Border"
@@ -746,6 +737,7 @@ UIStroke_2.LineJoinMode = "Round"
 UIStroke_2.Thickness = 1
 UIStroke_2.Transparency = 0
 
+local Sample = Instance.new("ImageLabel")
 Sample.Name = "Sample"
 Sample.Parent = Toggle
 Sample.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -754,6 +746,7 @@ Sample.Image = "http://www.roblox.com/asset/?id=4560909609"
 Sample.ImageColor3 = Color3.fromRGB(0, 0, 0)
 Sample.ImageTransparency = 0.600
 
+local CheckmarkHolder = Instance.new("Frame")
 CheckmarkHolder.Name = "CheckmarkHolder"
 CheckmarkHolder.Parent = Toggle
 CheckmarkHolder.AnchorPoint = Vector2.new(1, 0.5)
@@ -761,9 +754,11 @@ CheckmarkHolder.BackgroundColor3 = Color3.fromRGB(63, 63, 63)
 CheckmarkHolder.Position = UDim2.new(1, -3, 0.5, 0)
 CheckmarkHolder.Size = UDim2.new(0, 16, 0, 16)
 
+local UICorner_9 = Instance.new("UICorner")
 UICorner_9.CornerRadius = UDim.new(0, 2)
 UICorner_9.Parent = CheckmarkHolder
 
+local UIStroke_3 = Instance.new("UIStroke")
 UIStroke_3.Name = "UIStroke"
 UIStroke_3.Parent = CheckmarkHolder
 UIStroke_3.ApplyStrokeMode = "Border"
@@ -773,10 +768,8 @@ UIStroke_3.Thickness = 1
 UIStroke_3.Transparency = 0
 
 local ms = game:GetService("Players").LocalPlayer:GetMouse()
-local btn = Toggle
-local sample = Sample
-local focusing = false
 local toggled = default
+local focusing = false
 
 if toggled then
 	CheckmarkHolder.BackgroundColor3 = Color3.fromRGB(115, 191, 92)
@@ -785,7 +778,8 @@ end
 
 Toggle.MouseButton1Click:Connect(function()
 	if not focusing then
-		if not toggled then
+		toggled = not toggled
+		if toggled then
 			game.TweenService:Create(CheckmarkHolder, TweenInfo.new(0.15), {
 				BackgroundColor3 = Color3.fromRGB(115, 191, 92)
 			}):Play()
@@ -801,11 +795,11 @@ Toggle.MouseButton1Click:Connect(function()
 			}):Play()
 		end
 
-		local c = sample:Clone()
-		c.Parent = btn
+		local c = Sample:Clone()
+		c.Parent = Toggle
 		local x, y = (ms.X - c.AbsolutePosition.X), (ms.Y - c.AbsolutePosition.Y)
 		c.Position = UDim2.new(0, x, 0, y)
-		local len, size = 0.35, math.max(btn.AbsoluteSize.X, btn.AbsoluteSize.Y) * 1.5
+		local len, size = 0.35, math.max(Toggle.AbsoluteSize.X, Toggle.AbsoluteSize.Y) * 1.5
 		c:TweenSizeAndPosition(UDim2.new(0, size, 0, size), UDim2.new(0.5, -size / 2, 0.5, -size / 2), 'Out', 'Quad', len, true)
 		for i = 1, 10 do
 			c.ImageTransparency = c.ImageTransparency + 0.05
@@ -813,39 +807,35 @@ Toggle.MouseButton1Click:Connect(function()
 		end
 		c:Destroy()
 
-		toggled = not toggled
 		if configTable then
 			configTable[ToggleName] = toggled
 		end
 		pcall(callback, toggled)
 	end
 end)
-end
 
-local hovering = false
-btn.MouseEnter:Connect(function()
+Toggle.MouseEnter:Connect(function()
 	if not focusing then
-		game.TweenService:Create(btn, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+		game.TweenService:Create(Toggle, TweenInfo.new(0.1), {
 			BackgroundColor3 = Color3.fromRGB(54, 54, 54)
 		}):Play()
-		game.TweenService:Create(UIStroke_2, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
+		game.TweenService:Create(UIStroke_2, TweenInfo.new(0.1), {
 			Color = Color3.fromRGB(162, 162, 162)
 		}):Play()
-		hovering = true
-	end 
-end)
-btn.MouseLeave:Connect(function()
-	if not focusing then
-		game.TweenService:Create(btn, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-			BackgroundColor3 = Color3.fromRGB(26, 26, 26)
-		}):Play()
-		game.TweenService:Create(UIStroke_2, TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.In), {
-			Color = Color3.fromRGB(81, 81, 81)
-		}):Play()
-		hovering = false
 	end
 end)
 
+Toggle.MouseLeave:Connect(function()
+	if not focusing then
+		game.TweenService:Create(Toggle, TweenInfo.new(0.1), {
+			BackgroundColor3 = Color3.fromRGB(26, 26, 26)
+		}):Play()
+		game.TweenService:Create(UIStroke_2, TweenInfo.new(0.1), {
+			Color = Color3.fromRGB(81, 81, 81)
+		}):Play()
+	end
+end)
+end
 		function Elements:Slider(SliderTitle, minvalue, maxvalue, callback)
 			SliderTitle = SliderTitle or "Slider"
 			minvalue = minvalue or 0
