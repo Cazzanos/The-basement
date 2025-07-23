@@ -449,9 +449,9 @@ function Library:Create(TitleText, Size)
     local Tabs = {}
     local firstTab = true
     
-    function Tabs:Tab(TabText, TabIcon)
+    function Tabs:Tab(TabText, TabIconUrl)
         TabText = TabText or "Tab"
-        TabIcon = TabIcon or "rbxassetid://10734950309"
+        TabIconUrl = TabIconUrl or "rbxassetid://10734950309"
         
         -- Tab button
         local TabButton = Instance.new("TextButton")
@@ -493,7 +493,7 @@ function Library:Create(TitleText, Size)
         TabIcon.Position = UDim2.new(0, 15, 0.5, -10)
         TabIcon.Size = UDim2.new(0, 20, 0, 20)
         TabIcon.BackgroundTransparency = 1
-        TabIcon.Image = TabIcon
+        TabIcon.Image = TabIconUrl  -- FIXED: Now uses the parameter correctly
         TabIcon.ImageColor3 = firstTab and Colors.Primary or Colors.TextSecondary
         
         if not Utility:IsMobile() then
@@ -591,7 +591,7 @@ function Library:Create(TitleText, Size)
         firstTab = false
         
         local Elements = {}
-        
+
         function Elements:Section(title)
             title = title or "Section"
             
