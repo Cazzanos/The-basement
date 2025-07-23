@@ -662,16 +662,23 @@ function Library:Create(TitleText, Size)
             
             local SectionElements = {}
             
-            function SectionElements:Button(text, callback)
-                text = text or "Button"
-                callback = callback or function() end
+            function SectionElements:Button(config, callback)
+                local text, cb
+                if type(config) == "string" then
+                    text = config
+                    cb = callback or function() end
+                else
+                    config = config or {}
+                    text = config.Text or "Button"
+                    cb = config.Callback or function() end
+                end
                 
                 local Button = Instance.new("TextButton")
                 local ButtonCorner = Instance.new("UICorner")
                 local ButtonGradient = Instance.new("UIGradient")
                 local ButtonGlow = Utility:CreateGlow(Button, Colors.Primary, 0)
                 
-                Button.Name = text .. "_Button"
+                Button.Name = text .. "_Button" 
                 Button.Parent = SectionContent
                 Button.Size = UDim2.new(1, 0, 0, 35)
                 Button.BackgroundColor3 = Colors.Primary
@@ -712,12 +719,13 @@ function Library:Create(TitleText, Size)
                 
                 Button.MouseButton1Click:Connect(function()
                     spawn(function()
-                        callback()
+                        cb()
                     end)
                 end)
                 
                 return Button
             end
+
             
             function SectionElements:Toggle(text, default, callback)
                 text = text or "Toggle"
