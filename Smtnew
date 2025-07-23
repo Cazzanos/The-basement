@@ -1,0 +1,438 @@
+--[[
+    Modern UI Library v2
+    Originally by Deity & Cazan
+    Rebuilt for better performance while keeping original functionality
+    
+    Usage example:
+    local UI = loadstring(game:HttpGet(''))()
+    local Window = UI:Create("My Window")
+    local Tab = Window:Tab("Main", "rbxassetid://icon")
+    
+    Tab:Button("Click Me", function() 
+        print("Clicked!")
+    end)
+]]
+
+local Library = {}
+getgenv().UI_CONFIG = getgenv().UI_CONFIG or {}
+
+-- Core Services
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+
+-- Constants
+local TWEEN_INFO = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
+local THEME = {
+    Primary = Color3.fromRGB(40, 40, 40),
+    Secondary = Color3.fromRGB(26, 26, 26),
+    Accent = Color3.fromRGB(50, 50, 50),
+    Text = Color3.fromRGB(255, 255, 255),
+    TextDimmed = Color3.fromRGB(199, 199, 199),
+    Success = Color3.fromRGB(115, 191, 92),
+    Border = Color3.fromRGB(81, 81, 81),
+    Warning = Color3.fromRGB(214, 178, 14),
+    Info = Color3.fromRGB(12, 170, 218)
+}
+
+-- Core Variables
+local Mouse = Players.LocalPlayer:GetMouse()
+local Focusing = false
+local LibName = "UI_" .. tostring(math.random(1, 100)) .. tostring(math.random(1,50)) .. tostring(math.random(1, 100))
+
+-- Utility Functions
+local function CreateInstance(className, properties, children)
+    local inst = Instance.new(className)
+    for prop, value in pairs(properties or {}) do
+        inst[prop] = value
+    end
+    for _, child in ipairs(children or {}) do
+        child.Parent = inst
+    end
+    return inst
+end
+
+local function Tween(object, properties, duration, style, direction)
+    local tween = TweenService:Create(
+        object,
+        TweenInfo.new(duration or 0.2, style or Enum.EasingStyle.Quad, direction or Enum.EasingDirection.InOut),
+        properties
+    )
+    tween:Play()
+    return tween
+end
+
+function Library:DraggingEnabled(frame, parent)
+    parent = parent or frame
+    local dragging = false
+    local dragInput, mousePos, framePos
+
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            mousePos = input.Position
+            framePos = parent.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - mousePos
+            parent.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+function Library:Create(TitleText)
+    local window = {}
+    
+    -- Main GUI Creation
+    local UILibrary = CreateInstance("ScreenGui", {
+        Name = LibName,
+        Parent = CoreGui,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    })
+
+    local Main = CreateInstance("Frame", {
+        Name = "Main",
+        Parent = UILibrary,
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundColor3 = THEME.Primary,
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        Size = UDim2.new(0, 400, 0, 228)
+    }, {
+        CreateInstance("UICorner", {CornerRadius = UDim.new(0, 6)})
+    })
+
+    -- TopBar
+    local TopBar = CreateInstance("Frame", {
+        Name = "TopBar",
+        Parent = Main,
+        BackgroundColor3 = THEME.Secondary,
+        Size = UDim2.new(1, 0, 0, 30)
+    }, {
+        CreateInstance("UICorner", {CornerRadius = UDim.new(0, 6)}),
+        CreateInstance("TextLabel", {
+            Name = "Title",
+            BackgroundTransparency = 1,
+            Size = UDim2.new(0.5, 0, 1, 0),
+            Font = Enum.Font.Gotham,
+            Text = TitleText,
+            TextColor3 = THEME.Text,
+            TextSize = 14,
+            TextXAlignment = Enum.TextXAlignment.Left
+        })
+    })
+
+    -- Close Button
+    local CloseButton = CreateInstance("ImageButton", {
+        Name = "Close",
+        Parent = TopBar,
+        AnchorPoint = Vector2.new(1, 0.5),
+        BackgroundTransparency = 1,
+        Position = UDim2.new(1, -8, 0.5, 0),
+        Size = UDim2.new(0, 14, 0, 14),
+        Image = "rbxassetid://10884453403"
+    })
+
+    CloseButton.MouseButton1Click:Connect(function()
+        Tween(CloseButton, {ImageTransparency = 1}, 0.1)
+        Tween(Main, {
+            Size = UDim2.new(0, 0, 0, 0),
+            Position = UDim2.new(0.5, 0, 0.5, 0)
+        }, 0.1)
+        task.wait(1.5)
+        UILibrary:Destroy()
+    end)
+
+    -- Navigation
+    local Navigation = CreateInstance("Frame", {
+        Name = "Navigation",
+        Parent = Main,
+        BackgroundColor3 = THEME.Accent,
+        Position = UDim2.new(0, 0, 0, 30),
+        Size = UDim2.new(0, 120, 1, -30)
+    }, {
+        CreateInstance("UICorner", {CornerRadius = UDim.new(0, 6)}),
+        CreateInstance("Frame", {
+            Name = "ButtonHolder",
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 1, 0)
+        })
+    })
+
+    -- Content Container
+    local ContentContainer = CreateInstance("Frame", {
+        Name = "ContentContainer",
+        Parent = Main,
+        AnchorPoint = Vector2.new(1, 0),
+        BackgroundTransparency = 1,
+        Position = UDim2.new(1, -6, 0, 36),
+        Size = UDim2.new(1, -133, 1, -42)
+    })
+
+    -- Make window draggable
+    Library:DraggingEnabled(TopBar, Main)
+
+    -- Tab System
+    local TabsFolder = Instance.new("Folder")
+    TabsFolder.Name = "TabsFolder"
+    TabsFolder.Parent = ContentContainer
+
+    local firstTab = true
+    
+    function window:Tab(TabText, TabIcon)
+        TabText = TabText or "New Tab"
+        TabIcon = TabIcon or ""
+        
+        local tab = {}
+        
+        -- Tab Button
+        local TabButton = CreateInstance("TextButton", {
+            Name = TabText.."_TabButton",
+            Parent = Navigation.ButtonHolder,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 0, 28),
+            Font = Enum.Font.Ubuntu,
+            Text = TabText,
+            TextColor3 = firstTab and THEME.Text or THEME.TextDimmed,
+            TextSize = 12,
+            TextXAlignment = Enum.TextXAlignment.Left
+        })
+
+        -- Tab Icon
+        if TabIcon ~= "" then
+            local Icon = CreateInstance("ImageLabel", {
+                Name = "Icon",
+                Parent = TabButton,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0, 8, 0.5, -10),
+                Size = UDim2.new(0, 20, 0, 20),
+                Image = TabIcon
+            })
+            TabButton.UIPadding = CreateInstance("UIPadding", {
+                PaddingLeft = UDim.new(0, 32)
+            })
+        end
+
+        -- Tab Content
+        local TabContent = CreateInstance("ScrollingFrame", {
+            Name = "TabContent",
+            Parent = TabsFolder,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 1, 0),
+            AutomaticCanvasSize = Enum.AutomaticSize.Y,
+            CanvasSize = UDim2.new(0, 0, 0, 0),
+            ScrollBarThickness = 0,
+            Visible = firstTab
+        }, {
+            CreateInstance("UIListLayout", {
+                Padding = UDim.new(0, 6),
+                SortOrder = Enum.SortOrder.LayoutOrder
+            })
+        })
+
+        -- Tab Selection Logic
+        TabButton.MouseButton1Click:Connect(function()
+            for _, v in pairs(TabsFolder:GetChildren()) do
+                v.Visible = false
+            end
+            TabContent.Visible = true
+
+            for _, v in pairs(Navigation.ButtonHolder:GetChildren()) do
+                if v:IsA("TextButton") then
+                    Tween(v, {BackgroundTransparency = 1})
+                    Tween(v, {TextColor3 = THEME.TextDimmed})
+                end
+            end
+            
+            Tween(TabButton, {BackgroundTransparency = 0.9})
+            Tween(TabButton, {TextColor3 = THEME.Text})
+        end)
+
+        -- Element Creation Functions
+        function tab:Button(text, callback)
+            text = text or "Button"
+            callback = callback or function() end
+
+            local Button = CreateInstance("TextButton", {
+                Parent = TabContent,
+                BackgroundColor3 = THEME.Secondary,
+                Size = UDim2.new(1, 0, 0, 32),
+                AutoButtonColor = false,
+                Font = Enum.Font.Ubuntu,
+                Text = text,
+                TextColor3 = THEME.Text,
+                TextSize = 14
+            }, {
+                CreateInstance("UICorner", {CornerRadius = UDim.new(0, 4)}),
+                CreateInstance("UIStroke", {
+                    Color = THEME.Border,
+                    ApplyStrokeMode = "Border"
+                })
+            })
+
+            Button.MouseButton1Click:Connect(function()
+                if not Focusing then
+                    Tween(Button, {BackgroundColor3 = THEME.Accent}, 0.1)
+                    task.spawn(callback)
+                    task.wait(0.1)
+                    Tween(Button, {BackgroundColor3 = THEME.Secondary}, 0.1)
+                end
+            end)
+
+            return Button
+        end
+
+        function tab:Toggle(text, default, callback)
+            text = text or "Toggle"
+            default = default or false
+            callback = callback or function() end
+
+            local toggled = default
+            
+            local Toggle = CreateInstance("TextButton", {
+                Parent = TabContent,
+                BackgroundColor3 = THEME.Secondary,
+                Size = UDim2.new(1, 0, 0, 32),
+                AutoButtonColor = false,
+                Text = "",
+            }, {
+                CreateInstance("UICorner", {CornerRadius = UDim.new(0, 4)}),
+                CreateInstance("TextLabel", {
+                    Name = "Title",
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(1, -50, 1, 0),
+                    Font = Enum.Font.Ubuntu,
+                    Text = text,
+                    TextColor3 = THEME.Text,
+                    TextSize = 14,
+                    TextXAlignment = Enum.TextXAlignment.Left
+                }),
+                CreateInstance("Frame", {
+                    Name = "Indicator",
+                    AnchorPoint = Vector2.new(1, 0.5),
+                    BackgroundColor3 = toggled and THEME.Success or THEME.Border,
+                    Position = UDim2.new(1, -10, 0.5, 0),
+                    Size = UDim2.new(0, 20, 0, 20)
+                }, {
+                    CreateInstance("UICorner", {CornerRadius = UDim.new(0, 4)})
+                })
+            })
+
+            Toggle.MouseButton1Click:Connect(function()
+                toggled = not toggled
+                Tween(Toggle.Indicator, {BackgroundColor3 = toggled and THEME.Success or THEME.Border})
+                callback(toggled)
+            end)
+
+            return Toggle
+        end
+
+        function tab:Slider(text, min, max, default, callback)
+            text = text or "Slider"
+            min = min or 0
+            max = max or 100
+            default = default or min
+            callback = callback or function() end
+
+            local Slider = CreateInstance("Frame", {
+                Parent = TabContent,
+                BackgroundColor3 = THEME.Secondary,
+                Size = UDim2.new(1, 0, 0, 50)
+            }, {
+                CreateInstance("UICorner", {CornerRadius = UDim.new(0, 4)}),
+                CreateInstance("TextLabel", {
+                    Name = "Title",
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(1, -60, 0, 25),
+                    Font = Enum.Font.Ubuntu,
+                    Text = text,
+                    TextColor3 = THEME.Text,
+                    TextSize = 14,
+                    TextXAlignment = Enum.TextXAlignment.Left
+                }),
+                CreateInstance("TextLabel", {
+                    Name = "Value",
+                    BackgroundTransparency = 1,
+                    Position = UDim2.new(1, -55, 0, 0),
+                    Size = UDim2.new(0, 50, 0, 25),
+                    Font = Enum.Font.Ubuntu,
+                    Text = tostring(default),
+                    TextColor3 = THEME.Text,
+                    TextSize = 14
+                })
+            })
+
+            local SliderBar = CreateInstance("Frame", {
+                Parent = Slider,
+                BackgroundColor3 = THEME.Border,
+                Position = UDim2.new(0, 10, 0, 35),
+                Size = UDim2.new(1, -20, 0, 4)
+            }, {
+                CreateInstance("UICorner", {CornerRadius = UDim.new(1, 0)})
+            })
+
+            local SliderButton = CreateInstance("TextButton", {
+                Parent = SliderBar,
+                BackgroundColor3 = THEME.Success,
+                Position = UDim2.new((default - min)/(max - min), 0, 0.5, 0),
+                Size = UDim2.new(0, 10, 0, 10),
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                Text = ""
+            }, {
+                CreateInstance("UICorner", {CornerRadius = UDim.new(1, 0)})
+            })
+
+            local dragging = false
+
+            SliderButton.MouseButton1Down:Connect(function()
+                dragging = true
+            end)
+
+            UserInputService.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = false
+                end
+            end)
+
+            UserInputService.InputChanged:Connect(function(input)
+                if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                    local pos = math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
+                    local value = math.floor(min + ((max - min) * pos))
+                    Slider.Value.Text = tostring(value)
+                    Tween(SliderButton, {Position = UDim2.new(pos, 0, 0.5, 0)}, 0.1)
+                    callback(value)
+                end
+            end)
+
+            return Slider
+        end
+
+        -- More element functions can be added here...
+
+        if firstTab then
+            firstTab = false
+        end
+
+        return tab
+    end
+
+    return window
+end
+
+return Library
