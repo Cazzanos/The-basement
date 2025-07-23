@@ -9,8 +9,6 @@ getgenv().UI_CONFIG = getgenv().UI_CONFIG or {}
 -- Services
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 
 -- Constants
@@ -104,7 +102,7 @@ function Utility:CreateBlur(parent, size)
     return blur
 end
 
--- drag logic
+-- Drag logic
 function Library:DraggingEnabled(frame, parent)
     parent = parent or frame
     
@@ -1024,7 +1022,7 @@ function Library:Create(TitleText, Size)
                 
                 -- FIXED: Position dropdown list relative to the main dropdown frame
                 DropdownList.Name = "List"
-                DropdownList.Parent = Dropdown  -- Parent to Dropdown, not SectionContent
+                DropdownList.Parent = Dropdown 
                 DropdownList.Position = UDim2.new(0, 0, 0, 40) 
                 DropdownList.Size = UDim2.new(1, 0, 0, 0)
                 DropdownList.BackgroundColor3 = Colors.Surface
