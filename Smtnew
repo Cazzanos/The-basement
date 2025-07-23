@@ -1,6 +1,6 @@
 --[[
 Original concept from Kavo UI Library
-Completely rewritten and optimized by Cazan
+Completely rewritten by Cazan
 ]]
 
 local Library = {}
@@ -178,11 +178,10 @@ function Library:DestroyUI()
     end
 end
 
-function Library:Create(config)
-    config = config or {}
-    local title = config.Title or "Modern UI"
-    local theme = config.Theme or "Dark"
-    local size = config.Size or (Utility:IsMobile() and UDim2.new(0, 350, 0, 500) or UDim2.new(0, 480, 0, 360))
+-- RESTORED ORIGINAL API
+function Library:Create(TitleText, Size)
+    TitleText = TitleText or "Modern UI"
+    Size = Size or (Utility:IsMobile() and UDim2.new(0, 350, 0, 500) or UDim2.new(0, 480, 0, 360))
     
     -- Main UI structure
     local UILibrary = Instance.new("ScreenGui")
@@ -221,7 +220,7 @@ function Library:Create(config)
     Main.Parent = UILibrary
     Main.AnchorPoint = Vector2.new(0.5, 0.5)
     Main.Position = UDim2.new(0.5, 0, 0.5, 0)
-    Main.Size = size
+    Main.Size = Size
     Main.BackgroundColor3 = Colors.Background
     Main.BackgroundTransparency = 0.1
     Main.BorderSizePixel = 0
@@ -267,7 +266,7 @@ function Library:Create(config)
     Title.Size = UDim2.new(1, -100, 1, 0)
     Title.BackgroundTransparency = 1
     Title.Font = Enum.Font.GothamBold
-    Title.Text = title
+    Title.Text = TitleText
     Title.TextColor3 = Colors.Text
     Title.TextSize = Utility:IsMobile() and 16 or 18
     Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -421,20 +420,22 @@ function Library:Create(config)
             Position = UDim2.new(0.5, 0, 0.5, 0)
         }, ANIMATION_SPEED, Enum.EasingStyle.Back, Enum.EasingDirection.In)
         
-        task.wait(ANIMATION_SPEED)
-        Library:DestroyUI()
+        spawn(function()
+            wait(ANIMATION_SPEED)
+            Library:DestroyUI()
+        end)
     end)
     
     -- Minimize functionality
     local minimized = false
     MinimizeButton.MouseButton1Click:Connect(function()
         if not minimized then
-            Utility:Tween(Main, {Size = UDim2.new(0, size.X.Offset, 0, 50)}, ANIMATION_SPEED)
+            Utility:Tween(Main, {Size = UDim2.new(0, Size.X.Offset, 0, 50)}, ANIMATION_SPEED)
             Navigation.Visible = false
             ContentArea.Visible = false
             minimized = true
         else
-            Utility:Tween(Main, {Size = size}, ANIMATION_SPEED)
+            Utility:Tween(Main, {Size = Size}, ANIMATION_SPEED)
             Navigation.Visible = true
             ContentArea.Visible = true
             minimized = false
@@ -443,15 +444,14 @@ function Library:Create(config)
     
     -- Entrance animation
     Main.Size = UDim2.new(0, 0, 0, 0)
-    Utility:Tween(Main, {Size = size}, ANIMATION_SPEED, Enum.EasingStyle.Back)
+    Utility:Tween(Main, {Size = Size}, ANIMATION_SPEED, Enum.EasingStyle.Back)
     
     local Tabs = {}
     local firstTab = true
     
-    function Tabs:Tab(config)
-        config = config or {}
-        local tabName = config.Name or "Tab"
-        local tabIcon = config.Icon or "rbxassetid://10734950309"
+    function Tabs:Tab(TabText, TabIcon)
+        TabText = TabText or "Tab"
+        TabIcon = TabIcon or "rbxassetid://10734950309"
         
         -- Tab button
         local TabButton = Instance.new("TextButton")
@@ -467,7 +467,7 @@ function Library:Create(config)
         local ContentPadding = Instance.new("UIPadding")
         
         -- Tab button setup
-        TabButton.Name = tabName .. "_Button"
+        TabButton.Name = TabText .. "_Button"
         TabButton.Parent = TabContainer
         TabButton.Size = UDim2.new(1, 0, 0, Utility:IsMobile() and 45 or 50)
         TabButton.BackgroundColor3 = Colors.SurfaceLight
@@ -493,7 +493,7 @@ function Library:Create(config)
         TabIcon.Position = UDim2.new(0, 15, 0.5, -10)
         TabIcon.Size = UDim2.new(0, 20, 0, 20)
         TabIcon.BackgroundTransparency = 1
-        TabIcon.Image = tabIcon
+        TabIcon.Image = TabIcon
         TabIcon.ImageColor3 = firstTab and Colors.Primary or Colors.TextSecondary
         
         if not Utility:IsMobile() then
@@ -503,14 +503,14 @@ function Library:Create(config)
             TabLabel.Size = UDim2.new(1, -50, 1, 0)
             TabLabel.BackgroundTransparency = 1
             TabLabel.Font = Enum.Font.Gotham
-            TabLabel.Text = tabName
+            TabLabel.Text = TabText
             TabLabel.TextColor3 = firstTab and Colors.Text or Colors.TextSecondary
             TabLabel.TextSize = 12
             TabLabel.TextXAlignment = Enum.TextXAlignment.Left
         end
         
         -- Tab content setup
-        TabContent.Name = tabName .. "_Content"
+        TabContent.Name = TabText .. "_Content"
         TabContent.Parent = TabsFolder
         TabContent.Size = UDim2.new(1, 0, 1, 0)
         TabContent.BackgroundTransparency = 1
@@ -592,8 +592,8 @@ function Library:Create(config)
         
         local Elements = {}
         
-        function Elements:Section(name)
-            name = name or "Section"
+        function Elements:Section(title)
+            title = title or "Section"
             
             local Section = Instance.new("Frame")
             local SectionCorner = Instance.new("UICorner")
@@ -605,7 +605,7 @@ function Library:Create(config)
             local SectionLayout = Instance.new("UIListLayout")
             local SectionPadding = Instance.new("UIPadding")
             
-            Section.Name = name .. "_Section"
+            Section.Name = title .. "_Section"
             Section.Parent = TabContent
             Section.Size = UDim2.new(1, 0, 0, 0)
             Section.BackgroundColor3 = Colors.SurfaceLight
@@ -627,7 +627,7 @@ function Library:Create(config)
             SectionTitle.Size = UDim2.new(1, -30, 1, 0)
             SectionTitle.BackgroundTransparency = 1
             SectionTitle.Font = Enum.Font.GothamBold
-            SectionTitle.Text = name
+            SectionTitle.Text = title
             SectionTitle.TextColor3 = Colors.Text
             SectionTitle.TextSize = 14
             SectionTitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -662,23 +662,22 @@ function Library:Create(config)
             
             local SectionElements = {}
             
-            function SectionElements:Button(config)
-                config = config or {}
-                local buttonText = config.Text or "Button"
-                local callback = config.Callback or function() end
+            function SectionElements:Button(text, callback)
+                text = text or "Button"
+                callback = callback or function() end
                 
                 local Button = Instance.new("TextButton")
                 local ButtonCorner = Instance.new("UICorner")
                 local ButtonGradient = Instance.new("UIGradient")
                 local ButtonGlow = Utility:CreateGlow(Button, Colors.Primary, 0)
                 
-                Button.Name = buttonText .. "_Button"
+                Button.Name = text .. "_Button"
                 Button.Parent = SectionContent
                 Button.Size = UDim2.new(1, 0, 0, 35)
                 Button.BackgroundColor3 = Colors.Primary
                 Button.BorderSizePixel = 0
                 Button.Font = Enum.Font.GothamBold
-                Button.Text = buttonText
+                Button.Text = text
                 Button.TextColor3 = Colors.Text
                 Button.TextSize = 13
                 
@@ -712,17 +711,18 @@ function Library:Create(config)
                 end)
                 
                 Button.MouseButton1Click:Connect(function()
-                    pcall(callback)
+                    spawn(function()
+                        callback()
+                    end)
                 end)
                 
                 return Button
             end
             
-            function SectionElements:Toggle(config)
-                config = config or {}
-                local toggleText = config.Text or "Toggle"
-                local defaultState = config.Default or false
-                local callback = config.Callback or function() end
+            function SectionElements:Toggle(text, default, callback)
+                text = text or "Toggle"
+                default = default or false
+                callback = callback or function() end
                 
                 local Toggle = Instance.new("Frame")
                 local ToggleCorner = Instance.new("UICorner")
@@ -732,9 +732,9 @@ function Library:Create(config)
                 local ToggleIndicator = Instance.new("Frame")
                 local IndicatorCorner = Instance.new("UICorner")
                 
-                local toggled = defaultState
+                local toggled = default
                 
-                Toggle.Name = toggleText .. "_Toggle"
+                Toggle.Name = text .. "_Toggle"
                 Toggle.Parent = SectionContent
                 Toggle.Size = UDim2.new(1, 0, 0, 35)
                 Toggle.BackgroundColor3 = Colors.SurfaceLight
@@ -750,7 +750,7 @@ function Library:Create(config)
                 ToggleLabel.Size = UDim2.new(1, -70, 1, 0)
                 ToggleLabel.BackgroundTransparency = 1
                 ToggleLabel.Font = Enum.Font.Gotham
-                ToggleLabel.Text = toggleText
+                ToggleLabel.Text = text
                 ToggleLabel.TextColor3 = Colors.Text
                 ToggleLabel.TextSize = 13
                 ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -788,7 +788,9 @@ function Library:Create(config)
                         Position = UDim2.new(0, toggled and 27 or 3, 0.5, -8)
                     }, QUICK_ANIMATION)
                     
-                    pcall(callback, toggled)
+                    spawn(function()
+                        callback(toggled)
+                    end)
                 end)
                 
                 -- Hover effects
@@ -816,13 +818,12 @@ function Library:Create(config)
                 }
             end
             
-            function SectionElements:Slider(config)
-                config = config or {}
-                local sliderText = config.Text or "Slider"
-                local minValue = config.Min or 0
-                local maxValue = config.Max or 100
-                local defaultValue = config.Default or minValue
-                local callback = config.Callback or function() end
+            function SectionElements:Slider(text, min, max, default, callback)
+                text = text or "Slider"
+                min = min or 0
+                max = max or 100
+                default = default or min
+                callback = callback or function() end
                 
                 local Slider = Instance.new("Frame")
                 local SliderCorner = Instance.new("UICorner")
@@ -835,10 +836,10 @@ function Library:Create(config)
                 local SliderHandle = Instance.new("TextButton")
                 local HandleCorner = Instance.new("UICorner")
                 
-                local currentValue = defaultValue
+                local currentValue = default
                 local dragging = false
                 
-                Slider.Name = sliderText .. "_Slider"
+                Slider.Name = text .. "_Slider"
                 Slider.Parent = SectionContent
                 Slider.Size = UDim2.new(1, 0, 0, 50)
                 Slider.BackgroundColor3 = Colors.SurfaceLight
@@ -854,7 +855,7 @@ function Library:Create(config)
                 SliderLabel.Size = UDim2.new(1, -30, 0, 20)
                 SliderLabel.BackgroundTransparency = 1
                 SliderLabel.Font = Enum.Font.Gotham
-                SliderLabel.Text = sliderText
+                SliderLabel.Text = text
                 SliderLabel.TextColor3 = Colors.Text
                 SliderLabel.TextSize = 13
                 SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -882,7 +883,7 @@ function Library:Create(config)
                 
                 SliderFill.Name = "Fill"
                 SliderFill.Parent = SliderTrack
-                SliderFill.Size = UDim2.new((currentValue - minValue) / (maxValue - minValue), 0, 1, 0)
+                SliderFill.Size = UDim2.new((currentValue - min) / (max - min), 0, 1, 0)
                 SliderFill.BackgroundColor3 = Colors.Primary
                 SliderFill.BorderSizePixel = 0
                 
@@ -892,7 +893,7 @@ function Library:Create(config)
                 SliderHandle.Name = "Handle"
                 SliderHandle.Parent = SliderTrack
                 SliderHandle.AnchorPoint = Vector2.new(0.5, 0.5)
-                SliderHandle.Position = UDim2.new((currentValue - minValue) / (maxValue - minValue), 0, 0.5, 0)
+                SliderHandle.Position = UDim2.new((currentValue - min) / (max - min), 0, 0.5, 0)
                 SliderHandle.Size = UDim2.new(0, 16, 0, 16)
                 SliderHandle.BackgroundColor3 = Colors.Text
                 SliderHandle.BorderSizePixel = 0
@@ -907,14 +908,16 @@ function Library:Create(config)
                     local mousePos = input.Position.X
                     
                     local percent = math.clamp((mousePos - trackPos) / trackSize, 0, 1)
-                    currentValue = math.floor(minValue + (maxValue - minValue) * percent)
+                    currentValue = math.floor(min + (max - min) * percent)
                     
                     SliderValue.Text = tostring(currentValue)
                     
                     Utility:Tween(SliderFill, {Size = UDim2.new(percent, 0, 1, 0)}, 0.1)
                     Utility:Tween(SliderHandle, {Position = UDim2.new(percent, 0, 0.5, 0)}, 0.1)
                     
-                    pcall(callback, currentValue)
+                    spawn(function()
+                        callback(currentValue)
+                    end)
                 end
                 
                 SliderHandle.InputBegan:Connect(function(input)
@@ -949,9 +952,9 @@ function Library:Create(config)
                 
                 return {
                     SetValue = function(value)
-                        currentValue = math.clamp(value, minValue, maxValue)
+                        currentValue = math.clamp(value, min, max)
                         SliderValue.Text = tostring(currentValue)
-                        local percent = (currentValue - minValue) / (maxValue - minValue)
+                        local percent = (currentValue - min) / (max - min)
                         Utility:Tween(SliderFill, {Size = UDim2.new(percent, 0, 1, 0)}, QUICK_ANIMATION)
                         Utility:Tween(SliderHandle, {Position = UDim2.new(percent, 0, 0.5, 0)}, QUICK_ANIMATION)
                     end,
@@ -961,12 +964,12 @@ function Library:Create(config)
                 }
             end
             
-            function SectionElements:Dropdown(config)
-                config = config or {}
-                local dropdownText = config.Text or "Dropdown"
-                local options = config.Options or {"Option 1", "Option 2", "Option 3"}
-                local defaultOption = config.Default or options[1]
-                local callback = config.Callback or function() end
+            -- OPTIMIZED DROPDOWN
+            function SectionElements:Dropdown(text, options, default, callback)
+                text = text or "Dropdown"
+                options = options or {"Option 1", "Option 2", "Option 3"}
+                default = default or options[1]
+                callback = callback or function() end
                 
                 local Dropdown = Instance.new("Frame")
                 local DropdownCorner = Instance.new("UICorner")
@@ -982,48 +985,51 @@ function Library:Create(config)
                 local DropdownLayout = Instance.new("UIListLayout")
                 local DropdownPadding = Instance.new("UIPadding")
                 
-                local currentValue = defaultOption
+                local currentOption = default
                 local isOpen = false
+                local optionButtons = {}
                 
-                Dropdown.Name = dropdownText .. "_Dropdown"
+                Dropdown.Name = text .. "_Dropdown"
                 Dropdown.Parent = SectionContent
                 Dropdown.Size = UDim2.new(1, 0, 0, 35)
-                Dropdown.BackgroundColor3 = Colors.SurfaceLight
-                Dropdown.BackgroundTransparency = 0.3
+                Dropdown.BackgroundTransparency = 1
                 Dropdown.BorderSizePixel = 0
-                Dropdown.ClipsDescendants = false
                 
                 DropdownCorner.CornerRadius = UDim.new(0, 8)
                 DropdownCorner.Parent = Dropdown
                 
                 DropdownButton.Name = "Button"
                 DropdownButton.Parent = Dropdown
-                DropdownButton.Size = UDim2.new(1, 0, 1, 0)
-                DropdownButton.BackgroundTransparency = 1
+                DropdownButton.Size = UDim2.new(1, 0, 0, 35)
+                DropdownButton.BackgroundColor3 = Colors.SurfaceLight
+                DropdownButton.BackgroundTransparency = 0.3
                 DropdownButton.BorderSizePixel = 0
                 DropdownButton.Text = ""
+                
+                DropdownButtonCorner.CornerRadius = UDim.new(0, 8)
+                DropdownButtonCorner.Parent = DropdownButton
                 
                 DropdownLabel.Name = "Label"
                 DropdownLabel.Parent = DropdownButton
                 DropdownLabel.Position = UDim2.new(0, 15, 0, 0)
-                DropdownLabel.Size = UDim2.new(0.4, 0, 1, 0)
+                DropdownLabel.Size = UDim2.new(0.5, -15, 1, 0)
                 DropdownLabel.BackgroundTransparency = 1
                 DropdownLabel.Font = Enum.Font.Gotham
-                DropdownLabel.Text = dropdownText
+                DropdownLabel.Text = text
                 DropdownLabel.TextColor3 = Colors.Text
                 DropdownLabel.TextSize = 13
                 DropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
                 
                 DropdownValue.Name = "Value"
                 DropdownValue.Parent = DropdownButton
-                DropdownValue.Position = UDim2.new(0.4, 10, 0, 0)
+                DropdownValue.Position = UDim2.new(0.5, 0, 0, 0)
                 DropdownValue.Size = UDim2.new(0.5, -35, 1, 0)
                 DropdownValue.BackgroundTransparency = 1
                 DropdownValue.Font = Enum.Font.Gotham
-                DropdownValue.Text = currentValue
+                DropdownValue.Text = currentOption
                 DropdownValue.TextColor3 = Colors.Primary
                 DropdownValue.TextSize = 13
-                DropdownValue.TextXAlignment = Enum.TextXAlignment.Left
+                DropdownValue.TextXAlignment = Enum.TextXAlignment.Right
                 DropdownValue.TextTruncate = Enum.TextTruncate.AtEnd
                 
                 DropdownIcon.Name = "Icon"
@@ -1032,7 +1038,7 @@ function Library:Create(config)
                 DropdownIcon.Position = UDim2.new(1, -15, 0.5, 0)
                 DropdownIcon.Size = UDim2.new(0, 16, 0, 16)
                 DropdownIcon.BackgroundTransparency = 1
-                DropdownIcon.Image = "rbxassetid://10709790644"
+                DropdownIcon.Image = "rbxassetid://10709790948"
                 DropdownIcon.ImageColor3 = Colors.TextSecondary
                 DropdownIcon.Rotation = 0
                 
@@ -1045,6 +1051,7 @@ function Library:Create(config)
                 DropdownList.BorderSizePixel = 0
                 DropdownList.Visible = false
                 DropdownList.ZIndex = 10
+                DropdownList.ClipsDescendants = true
                 
                 DropdownListCorner.CornerRadius = UDim.new(0, 8)
                 DropdownListCorner.Parent = DropdownList
@@ -1063,6 +1070,7 @@ function Library:Create(config)
                 DropdownScroll.ScrollBarImageColor3 = Colors.Primary
                 DropdownScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
                 DropdownScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+                DropdownScroll.ScrollingDirection = Enum.ScrollingDirection.Y
                 
                 DropdownLayout.Parent = DropdownScroll
                 DropdownLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -1074,151 +1082,185 @@ function Library:Create(config)
                 DropdownPadding.PaddingLeft = UDim.new(0, 5)
                 DropdownPadding.PaddingRight = UDim.new(0, 5)
                 
-                -- Create option buttons
-                for i, option in ipairs(options) do
+                -- Optimized option creation
+                local function createOption(option, index)
                     local OptionButton = Instance.new("TextButton")
                     local OptionCorner = Instance.new("UICorner")
                     
-                    OptionButton.Name = "Option_" .. i
+                    OptionButton.Name = "Option_" .. index
                     OptionButton.Parent = DropdownScroll
                     OptionButton.Size = UDim2.new(1, 0, 0, 30)
                     OptionButton.BackgroundColor3 = Colors.SurfaceLight
-                    OptionButton.BackgroundTransparency = option == currentValue and 0.3 or 1
+                    OptionButton.BackgroundTransparency = option == currentOption and 0.3 or 1
                     OptionButton.BorderSizePixel = 0
                     OptionButton.Font = Enum.Font.Gotham
                     OptionButton.Text = option
-                    OptionButton.TextColor3 = option == currentValue and Colors.Primary or Colors.Text
+                    OptionButton.TextColor3 = option == currentOption and Colors.Primary or Colors.Text
                     OptionButton.TextSize = 12
-                    OptionButton.TextXAlignment = Enum.TextXAlignment.Left
+                    OptionButton.TextTruncate = Enum.TextTruncate.AtEnd
                     
                     OptionCorner.CornerRadius = UDim.new(0, 6)
                     OptionCorner.Parent = OptionButton
                     
-                    local optionPadding = Instance.new("UIPadding")
-                    optionPadding.Parent = OptionButton
-                    optionPadding.PaddingLeft = UDim.new(0, 10)
+                    -- Optimized hover effects
+                    local hoverConnection
+                    local leaveConnection
                     
-                    OptionButton.MouseEnter:Connect(function()
-                        if option ~= currentValue then
+                    hoverConnection = OptionButton.MouseEnter:Connect(function()
+                        if option ~= currentOption then
                             Utility:Tween(OptionButton, {BackgroundTransparency = 0.7}, QUICK_ANIMATION)
                         end
                     end)
                     
-                    OptionButton.MouseLeave:Connect(function()
-                        if option ~= currentValue then
+                    leaveConnection = OptionButton.MouseLeave:Connect(function()
+                        if option ~= currentOption then
                             Utility:Tween(OptionButton, {BackgroundTransparency = 1}, QUICK_ANIMATION)
                         end
                     end)
                     
                     OptionButton.MouseButton1Click:Connect(function()
-                        -- Update all option buttons
-                        for _, child in pairs(DropdownScroll:GetChildren()) do
-                            if child:IsA("TextButton") then
-                                Utility:Tween(child, {
-                                    BackgroundTransparency = 1,
-                                    TextColor3 = Colors.Text
-                                }, QUICK_ANIMATION)
+                        -- Update current option
+                        currentOption = option
+                        DropdownValue.Text = option
+                        
+                        -- Optimized button state updates
+                        for _, btn in pairs(optionButtons) do
+                            if btn.obj and btn.obj.Parent then
+                                if btn.option == option then
+                                    Utility:Tween(btn.obj, {BackgroundTransparency = 0.3}, QUICK_ANIMATION)
+                                    Utility:Tween(btn.obj, {TextColor3 = Colors.Primary}, QUICK_ANIMATION)
+                                else
+                                    Utility:Tween(btn.obj, {BackgroundTransparency = 1}, QUICK_ANIMATION)
+                                    Utility:Tween(btn.obj, {TextColor3 = Colors.Text}, QUICK_ANIMATION)
+                                end
                             end
                         end
                         
-                        -- Update selected option
-                        currentValue = option
-                        DropdownValue.Text = currentValue
-                        Utility:Tween(OptionButton, {
-                            BackgroundTransparency = 0.3,
-                            TextColor3 = Colors.Primary
-                        }, QUICK_ANIMATION)
-                        
-                        -- Close dropdown
+                        -- Close dropdown with optimized animation
                         isOpen = false
-                        Utility:Tween(DropdownIcon, {Rotation = 0}, QUICK_ANIMATION)
                         Utility:Tween(DropdownList, {Size = UDim2.new(1, 0, 0, 0)}, QUICK_ANIMATION)
-                        task.wait(QUICK_ANIMATION)
-                        DropdownList.Visible = false
+                        Utility:Tween(DropdownIcon, {Rotation = 0}, QUICK_ANIMATION)
+                        Utility:Tween(Dropdown, {Size = UDim2.new(1, 0, 0, 35)}, QUICK_ANIMATION)
                         
-                        pcall(callback, currentValue)
+                        spawn(function()
+                            wait(QUICK_ANIMATION)
+                            DropdownList.Visible = false
+                        end)
+                        
+                        -- Call callback
+                        spawn(function()
+                            callback(option)
+                        end)
                     end)
+                    
+                    -- Store button reference for optimization
+                    optionButtons[index] = {
+                        obj = OptionButton,
+                        option = option,
+                        hoverConn = hoverConnection,
+                        leaveConn = leaveConnection
+                    }
+                    
+                    return OptionButton
                 end
                 
-                -- Calculate dropdown height
-                local maxHeight = math.min(#options * 32 + 10, 150)
+                -- Create initial options
+                for i, option in ipairs(options) do
+                    createOption(option, i)
+                end
+                
+                -- Calculate dropdown height with optimization
+                local function getDropdownHeight()
+                    return math.min(#options * 32 + 10, 150)
+                end
+                
+                local maxHeight = getDropdownHeight()
                 
                 DropdownButton.MouseButton1Click:Connect(function()
                     isOpen = not isOpen
                     
                     if isOpen then
                         DropdownList.Visible = true
-                        DropdownList.Size = UDim2.new(1, 0, 0, 0)
-                        Utility:Tween(DropdownIcon, {Rotation = 180}, QUICK_ANIMATION)
+                        maxHeight = getDropdownHeight() -- Recalculate in case options changed
+                        
                         Utility:Tween(DropdownList, {Size = UDim2.new(1, 0, 0, maxHeight)}, QUICK_ANIMATION)
+                        Utility:Tween(DropdownIcon, {Rotation = 180}, QUICK_ANIMATION)
+                        Utility:Tween(Dropdown, {Size = UDim2.new(1, 0, 0, 35 + maxHeight + 5)}, QUICK_ANIMATION)
                     else
-                        Utility:Tween(DropdownIcon, {Rotation = 0}, QUICK_ANIMATION)
                         Utility:Tween(DropdownList, {Size = UDim2.new(1, 0, 0, 0)}, QUICK_ANIMATION)
-                        task.wait(QUICK_ANIMATION)
-                        DropdownList.Visible = false
+                        Utility:Tween(DropdownIcon, {Rotation = 0}, QUICK_ANIMATION)
+                        Utility:Tween(Dropdown, {Size = UDim2.new(1, 0, 0, 35)}, QUICK_ANIMATION)
+                        
+                        spawn(function()
+                            wait(QUICK_ANIMATION)
+                            DropdownList.Visible = false
+                        end)
                     end
                 end)
                 
-                -- Close dropdown when clicking outside
-                UserInputService.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or 
-                       input.UserInputType == Enum.UserInputType.Touch then
-                        if isOpen and not DropdownList:IsAncestorOf(input.Target) and 
-                           input.Target ~= DropdownButton and not DropdownButton:IsAncestorOf(input.Target) then
-                            isOpen = false
-                            Utility:Tween(DropdownIcon, {Rotation = 0}, QUICK_ANIMATION)
-                            Utility:Tween(DropdownList, {Size = UDim2.new(1, 0, 0, 0)}, QUICK_ANIMATION)
-                            task.wait(QUICK_ANIMATION)
-                            DropdownList.Visible = false
-                        end
-                    end
+                -- Optimized hover effects for main button
+                DropdownButton.MouseEnter:Connect(function()
+                    Utility:Tween(DropdownButton, {BackgroundTransparency = 0.1}, QUICK_ANIMATION)
+                end)
+                
+                DropdownButton.MouseLeave:Connect(function()
+                    Utility:Tween(DropdownButton, {BackgroundTransparency = 0.3}, QUICK_ANIMATION)
                 end)
                 
                 return {
                     SetValue = function(value)
                         if table.find(options, value) then
-                            currentValue = value
-                            DropdownValue.Text = currentValue
+                            currentOption = value
+                            DropdownValue.Text = value
                             
-                            -- Update option buttons
-                            for _, child in pairs(DropdownScroll:GetChildren()) do
-                                if child:IsA("TextButton") then
-                                    if child.Text == value then
-                                        Utility:Tween(child, {
-                                            BackgroundTransparency = 0.3,
-                                            TextColor3 = Colors.Primary
-                                        }, QUICK_ANIMATION)
+                            -- Update option buttons efficiently
+                            for _, btn in pairs(optionButtons) do
+                                if btn.obj and btn.obj.Parent then
+                                    if btn.option == value then
+                                        Utility:Tween(btn.obj, {BackgroundTransparency = 0.3}, QUICK_ANIMATION)
+                                        Utility:Tween(btn.obj, {TextColor3 = Colors.Primary}, QUICK_ANIMATION)
                                     else
-                                        Utility:Tween(child, {
-                                            BackgroundTransparency = 1,
-                                            TextColor3 = Colors.Text
-                                        }, QUICK_ANIMATION)
+                                        Utility:Tween(btn.obj, {BackgroundTransparency = 1}, QUICK_ANIMATION)
+                                        Utility:Tween(btn.obj, {TextColor3 = Colors.Text}, QUICK_ANIMATION)
                                     end
                                 end
                             end
                         end
                     end,
                     GetValue = function()
-                        return currentValue
+                        return currentOption
                     end,
                     SetOptions = function(newOptions)
                         options = newOptions
-                        -- Clear existing options
-                        for _, child in pairs(DropdownScroll:GetChildren()) do
-                            if child:IsA("TextButton") then
-                                child:Destroy()
+                        
+                        -- Clean up old buttons efficiently
+                        for _, btn in pairs(optionButtons) do
+                            if btn.obj then
+                                btn.hoverConn:Disconnect()
+                                btn.leaveConn:Disconnect()
+                                btn.obj:Destroy()
                             end
                         end
-                        -- Recreate options (implementation would be similar to above)
+                        optionButtons = {}
+                        
+                        -- Create new options
+                        for i, option in ipairs(options) do
+                            createOption(option, i)
+                        end
+                        
+                        -- Update current option if it doesn't exist in new options
+                        if not table.find(options, currentOption) and #options > 0 then
+                            currentOption = options[1]
+                            DropdownValue.Text = currentOption
+                        end
                     end
                 }
             end
             
-            function SectionElements:TextBox(config)
-                config = config or {}
-                local placeholder = config.Placeholder or "Enter text..."
-                local defaultText = config.Default or ""
-                local callback = config.Callback or function() end
+            function SectionElements:TextBox(placeholder, default, callback)
+                placeholder = placeholder or "Enter text..."
+                default = default or ""
+                callback = callback or function() end
                 
                 local TextBox = Instance.new("Frame")
                 local TextBoxCorner = Instance.new("UICorner")
@@ -1246,7 +1288,7 @@ function Library:Create(config)
                 TextInput.Font = Enum.Font.Gotham
                 TextInput.PlaceholderText = placeholder
                 TextInput.PlaceholderColor3 = Colors.TextSecondary
-                TextInput.Text = defaultText
+                TextInput.Text = default
                 TextInput.TextColor3 = Colors.Text
                 TextInput.TextSize = 13
                 TextInput.TextXAlignment = Enum.TextXAlignment.Left
@@ -1265,7 +1307,9 @@ function Library:Create(config)
                 
                 TextInput.FocusLost:Connect(function()
                     Utility:Tween(TextInputStroke, {Color = Colors.Border, Transparency = 0.5}, QUICK_ANIMATION)
-                    pcall(callback, TextInput.Text)
+                    spawn(function()
+                        callback(TextInput.Text)
+                    end)
                 end)
                 
                 return {
@@ -1278,9 +1322,8 @@ function Library:Create(config)
                 }
             end
             
-            function SectionElements:Label(config)
-                config = config or {}
-                local labelText = config.Text or "Label"
+            function SectionElements:Label(text)
+                text = text or "Label"
                 
                 local Label = Instance.new("Frame")
                 local LabelCorner = Instance.new("UICorner")
@@ -1302,14 +1345,14 @@ function Library:Create(config)
                 LabelText.Size = UDim2.new(1, -30, 1, 0)
                 LabelText.BackgroundTransparency = 1
                 LabelText.Font = Enum.Font.Gotham
-                LabelText.Text = labelText
+                LabelText.Text = text
                 LabelText.TextColor3 = Colors.TextSecondary
                 LabelText.TextSize = 13
                 LabelText.TextXAlignment = Enum.TextXAlignment.Left
                 
                 return {
-                    SetText = function(text)
-                        LabelText.Text = text
+                    SetText = function(newText)
+                        LabelText.Text = newText
                     end
                 }
             end
@@ -1339,25 +1382,13 @@ function Library:Notify(config)
     }
     
     -- Create notification container if it doesn't exist
-    local notifContainer = CoreGui:FindFirstChild("ModernUI_Notifications")
-    if not notifContainer then
-        notifContainer = Instance.new("ScreenGui")
-        notifContainer.Name = "ModernUI_Notifications"
-        notifContainer.Parent = CoreGui
-        notifContainer.ResetOnSpawn = false
-        notifContainer.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-        
-        local layout = Instance.new("UIListLayout")
-        layout.Parent = notifContainer
-        layout.SortOrder = Enum.SortOrder.LayoutOrder
-        layout.Padding = UDim.new(0, 10)
-        layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-        layout.VerticalAlignment = Enum.VerticalAlignment.Top
-        
-        local padding = Instance.new("UIPadding")
-        padding.Parent = notifContainer
-        padding.PaddingTop = UDim.new(0, 20)
-        padding.PaddingRight = UDim.new(0, 20)
+    local NotificationContainer = CoreGui:FindFirstChild("ModernUI_Notifications")
+    if not NotificationContainer then
+        NotificationContainer = Instance.new("ScreenGui")
+        NotificationContainer.Name = "ModernUI_Notifications"
+        NotificationContainer.Parent = CoreGui
+        NotificationContainer.ResetOnSpawn = false
+        NotificationContainer.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     end
     
     local Notification = Instance.new("Frame")
@@ -1369,13 +1400,14 @@ function Library:Notify(config)
     local NotifProgress = Instance.new("Frame")
     local ProgressCorner = Instance.new("UICorner")
     
-    Notification.Name = "Notification"
-    Notification.Parent = notifContainer
+    Notification.Name = "Notification_" .. tostring(tick())
+    Notification.Parent = NotificationContainer
+    Notification.AnchorPoint = Vector2.new(1, 0)
+    Notification.Position = UDim2.new(1, 20, 0, 20)
     Notification.Size = UDim2.new(0, 300, 0, 80)
     Notification.BackgroundColor3 = Colors.Surface
     Notification.BackgroundTransparency = 0.1
     Notification.BorderSizePixel = 0
-    Notification.Position = UDim2.new(0, 320, 0, 0) -- Start off-screen
     
     NotifCorner.CornerRadius = UDim.new(0, 12)
     NotifCorner.Parent = Notification
@@ -1434,16 +1466,32 @@ function Library:Notify(config)
     ProgressCorner.CornerRadius = UDim.new(0, 2)
     ProgressCorner.Parent = NotifProgress
     
+    -- Position notification based on existing notifications
+    local existingNotifs = 0
+    for _, child in pairs(NotificationContainer:GetChildren()) do
+        if child:IsA("Frame") and child ~= Notification then
+            existingNotifs = existingNotifs + 1
+        end
+    end
+    
+    local yOffset = 20 + (existingNotifs * 90)
+    Notification.Position = UDim2.new(1, 20, 0, yOffset)
+    
     -- Entrance animation
-    Utility:Tween(Notification, {Position = UDim2.new(0, 0, 0, 0)}, ANIMATION_SPEED, Enum.EasingStyle.Back)
+    Utility:Tween(Notification, {Position = UDim2.new(1, -20, 0, yOffset)}, ANIMATION_SPEED, Enum.EasingStyle.Back)
     
     -- Progress animation and auto dismiss
-    task.spawn(function()
+    spawn(function()
         Utility:Tween(NotifProgress, {Size = UDim2.new(0, 0, 0, 3)}, duration, Enum.EasingStyle.Linear)
-        task.wait(duration)
-        Utility:Tween(Notification, {Position = UDim2.new(0, 320, 0, 0)}, ANIMATION_SPEED, Enum.EasingStyle.Back, Enum.EasingDirection.In)
-        task.wait(ANIMATION_SPEED)
-        Notification:Destroy()
+        wait(duration)
+        
+        -- Exit animation
+        Utility:Tween(Notification, {Position = UDim2.new(1, 20, 0, yOffset)}, ANIMATION_SPEED, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+        wait(ANIMATION_SPEED)
+        
+        if Notification and Notification.Parent then
+            Notification:Destroy()
+        end
     end)
 end
 
