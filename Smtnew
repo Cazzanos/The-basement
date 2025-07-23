@@ -1,12 +1,7 @@
 
 --[[
-Modern UI Library for Roblox Executors
-Optimized for both PC and Mobile
-Features: Glassmorphism, Modern Design, Smooth Animations
-Compatible with: Arceus X, Delta, Hydrogen, Synapse X/Z, Potassium, and more
-
 Original concept from Kavo UI Library
-Completely rewritten and modernized
+Completely rewritten and modernized by Cazan
 ]]
 
 local Library = {}
